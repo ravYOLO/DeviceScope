@@ -48,6 +48,11 @@
     <string name="network_type">Тип сети</string>
     <string name="signal_strength">Сигнал</string>
     <string name="ip_address">IP-адрес</string>
+    <string name="ping_ms">%d мс</string>
+    <string name="ping_result">Задержка</string>
+    <string name="ping_test">Проверить пинг</string>
+    <string name="ping_timeout">Нет ответа</string>
+    <string name="wifi_info">Wi-Fi</string>
     <string name="sensor_accelerometer">Акселерометр</string>
     <string name="sensor_gyroscope">Гироскоп</string>
     <string name="sensor_proximity">Приближение</string>
@@ -59,6 +64,11 @@
     <string name="camera_back">Основная камера</string>
     <string name="camera_front">Фронтальная</string>
     <string name="camera_resolution">Макс. разрешение</string>
+    <string name="mic_permission_denied">Нужно разрешение на микрофон</string>
+    <string name="mic_playing">Воспроизведение…</string>
+    <string name="mic_recording">Запись…</string>
+    <string name="mic_test">Тест микрофона</string>
+    <string name="sound_test">Тест динамика</string>
     <string name="test_screen">Тест экрана</string>
     <string name="test_touch">Тест касаний</string>
     <string name="test_vibration">Вибрация</string>

@@ -72,7 +72,10 @@ data class NetworkInfo(
     val signalStrengthDbm: Int,
     val ipAddress: String,
     val simCount: Int,
-    val roaming: Boolean
+    val roaming: Boolean,
+    val wifiSsid: String = "",
+    val wifiFrequencyMhz: Int = 0,
+    val wifiChannel: Int = 0
 )
 
 data class SensorEntry(

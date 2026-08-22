@@ -4,12 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
 import java.net.Inet4Address
 
 object NetworkProvider {
+
+    private const val UnknownSsid = "<unknown ssid>"
 
     private val defaults = NetworkInfo(
         operatorName = "",
@@ -22,13 +25,17 @@ object NetworkProvider {
 
     fun collect(context: Context): NetworkInfo = runCatching {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val wifiFrequencyMhz = wifiFrequencyMhzOf(context)
         NetworkInfo(
             operatorName = operatorNameOf(telephonyManager),
             networkType = networkTypeOf(context, telephonyManager),
             signalStrengthDbm = signalStrengthDbmOf(telephonyManager),
             ipAddress = ipAddressOf(context),
             simCount = simCountOf(context),
-            roaming = roamingOf(telephonyManager)
+            roaming = roamingOf(telephonyManager),
+            wifiSsid = wifiSsidOf(context),
+            wifiFrequencyMhz = wifiFrequencyMhz,
+            wifiChannel = wifiChannelOf(wifiFrequencyMhz)
         )
     }.getOrDefault(defaults)
 
@@ -84,4 +91,23 @@ object NetworkProvider {
     private fun roamingOf(telephonyManager: TelephonyManager): Boolean = runCatching {
         telephonyManager.isNetworkRoaming
     }.getOrDefault(false)
+
+    @SuppressLint("MissingPermission")
+    @Suppress("DEPRECATION")
+    private fun wifiSsidOf(context: Context): String = runCatching {
+        val rawSsid = (context.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo?.ssid.orEmpty()
+        if (rawSsid.isBlank() || rawSsid == UnknownSsid) "" else rawSsid.removeSurrounding("\"")
+    }.getOrDefault("")
+
+    @SuppressLint("MissingPermission")
+    @Suppress("DEPRECATION")
+    private fun wifiFrequencyMhzOf(context: Context): Int = runCatching {
+        (context.getSystemService(Context.WIFI_SERVICE) as WifiManager).connectionInfo?.frequency ?: 0
+    }.getOrDefault(0)
+
+    private fun wifiChannelOf(frequencyMhz: Int): Int = when {
+        frequencyMhz in 2412..2484 -> (frequencyMhz - 2412) / 5 + 1
+        frequencyMhz in 5170..5885 -> (frequencyMhz - 5170) / 5 + 34
+        else -> 0
+    }
 }

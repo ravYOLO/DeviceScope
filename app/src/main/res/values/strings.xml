@@ -48,6 +48,11 @@
     <string name="network_type">Network type</string>
     <string name="signal_strength">Signal</string>
     <string name="ip_address">IP address</string>
+    <string name="ping_ms">%d ms</string>
+    <string name="ping_result">Latency</string>
+    <string name="ping_test">Ping test</string>
+    <string name="ping_timeout">No response</string>
+    <string name="wifi_info">Wi-Fi</string>
     <string name="sensor_accelerometer">Accelerometer</string>
     <string name="sensor_gyroscope">Gyroscope</string>
     <string name="sensor_proximity">Proximity</string>
@@ -59,6 +64,11 @@
     <string name="camera_back">Back camera</string>
     <string name="camera_front">Front camera</string>
     <string name="camera_resolution">Max resolution</string>
+    <string name="mic_permission_denied">Microphone permission needed</string>
+    <string name="mic_playing">Playing…</string>
+    <string name="mic_recording">Recording…</string>
+    <string name="mic_test">Microphone test</string>
+    <string name="sound_test">Speaker test</string>
     <string name="test_screen">Screen test</string>
     <string name="test_touch">Touch test</string>
     <string name="test_vibration">Vibration</string>
