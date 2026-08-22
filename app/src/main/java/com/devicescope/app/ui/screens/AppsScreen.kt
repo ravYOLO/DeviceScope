@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,17 +32,29 @@ import com.devicescope.app.R
 import com.devicescope.app.data.AppEntry
 import com.devicescope.app.data.AppsProvider
 import com.devicescope.app.ui.components.InfoRow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AppsScreen() {
     val context = LocalContext.current
-    var apps by remember { mutableStateOf(AppsProvider.collect(context)) }
-    val systemCount = apps.count { it.isSystem }
-    val userApps = apps.filter { !it.isSystem }.take(200)
+    var apps by remember { mutableStateOf<List<AppEntry>?>(null) }
+    LaunchedEffect(Unit) {
+        apps = withContext(Dispatchers.Default) { AppsProvider.collect(context) }
+    }
+    if (apps == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+    val data = apps!!
+    val systemCount = data.count { it.isSystem }
+    val userApps = data.filter { !it.isSystem }.take(200)
     LazyColumn(Modifier.fillMaxSize()) {
-        item { InfoRow(stringResource(R.string.apps_count), apps.size.toString()) }
+        item { InfoRow(stringResource(R.string.apps_count), data.size.toString()) }
         item { InfoRow(stringResource(R.string.apps_system), systemCount.toString()) }
-        item { InfoRow(stringResource(R.string.apps_user), (apps.size - systemCount).toString()) }
+        item { InfoRow(stringResource(R.string.apps_user), (data.size - systemCount).toString()) }
         items(userApps, key = { it.packageName }) { app -> AppRow(app) }
     }
 }

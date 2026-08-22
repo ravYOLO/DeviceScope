@@ -1,5 +1,6 @@
 package com.devicescope.app.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,13 +8,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -23,6 +27,8 @@ import com.devicescope.app.data.SensorEntry
 import com.devicescope.app.data.SensorProvider
 import com.devicescope.app.ui.components.SectionTitle
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private val sensorGroups = listOf(
     R.string.sensor_accelerometer,
@@ -43,10 +49,20 @@ private fun sensorTypeLabel(type: String): Int = when {
 @Composable
 fun SensorsScreen() {
     val context = LocalContext.current
-    var sensors by remember { mutableStateOf(SensorProvider.collect(context)) }
+    var sensors by remember { mutableStateOf<List<SensorEntry>?>(null) }
+    LaunchedEffect(Unit) {
+        sensors = withContext(Dispatchers.Default) { SensorProvider.collect(context) }
+    }
+    if (sensors == null) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+    val data = sensors!!
     LazyColumn(Modifier.fillMaxSize()) {
         for (groupId in sensorGroups) {
-            val groupSensors = sensors.filter { sensorTypeLabel(it.type) == groupId }
+            val groupSensors = data.filter { sensorTypeLabel(it.type) == groupId }
             if (groupSensors.isNotEmpty()) {
                 item(key = "header_$groupId") { SectionTitle(stringResource(groupId)) }
                 items(groupSensors, key = { it.name }) { sensor -> SensorCard(sensor) }
