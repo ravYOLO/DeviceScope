@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -45,6 +46,9 @@ import com.devicescope.app.ui.screens.PhoneScreen
 import com.devicescope.app.ui.screens.SensorsScreen
 import com.devicescope.app.ui.screens.SystemScreen
 import com.devicescope.app.ui.screens.TestsScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 enum class Tab(@StringRes val labelRes: Int) {
     OVERVIEW(R.string.tab_overview),
@@ -65,12 +69,23 @@ enum class Tab(@StringRes val labelRes: Int) {
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var selectedTab by rememberSaveable { mutableStateOf(Tab.OVERVIEW) }
     Scaffold(
         topBar = {
             AppTopBar(
-                onShare = { shareReport(context) },
-                onCopy = { copyReport(context) }
+                onShare = {
+                    scope.launch {
+                        val text = withContext(Dispatchers.Default) { ReportBuilder.build(context) }
+                        shareReport(context, text)
+                    }
+                },
+                onCopy = {
+                    scope.launch {
+                        val text = withContext(Dispatchers.Default) { ReportBuilder.build(context) }
+                        copyReport(context, text)
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -138,18 +153,18 @@ private fun TabContent(tab: Tab) {
     }
 }
 
-private fun shareReport(context: Context) {
+private fun shareReport(context: Context, reportText: String) {
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, ReportBuilder.build(context))
+        putExtra(Intent.EXTRA_TEXT, reportText)
     }
     context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.share_report)))
 }
 
-private fun copyReport(context: Context) {
+private fun copyReport(context: Context, reportText: String) {
     val clipboard = context.getSystemService(ClipboardManager::class.java)
     clipboard.setPrimaryClip(
-        ClipData.newPlainText(context.getString(R.string.app_name), ReportBuilder.build(context))
+        ClipData.newPlainText(context.getString(R.string.app_name), reportText)
     )
     Toast.makeText(context, R.string.copy_report, Toast.LENGTH_SHORT).show()
 }
